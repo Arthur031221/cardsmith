@@ -4,44 +4,36 @@ Offline flashcards. Drop a PDF, a slide deck, or a text file, get a spaced-repet
 deck built by a local LLM, study it in the browser, export to Anki. No account, no
 cloud, nothing leaves your machine.
 
-On a 12-page public-domain biology chapter, cardsmith generated `<CARDS>` cards in
-`<TIME>` seconds and, on a 40-card hand-rated sample against a written rubric,
-`<ACCURACY>` were judged factually accurate.[^bench]
+On a 3,248-word public-domain biology chapter, cardsmith generated 152 cards in
+775.5 seconds. Its mechanical source-quote check matched 142 of 152 cards to an
+exact substring of the input. Factual accuracy has not yet been hand-rated.[^bench]
 
 [^bench]: Source: Project Gutenberg ebook #39969, *A Civic Biology, Presented in
     Problems* by George W. Hunter (1914), Chapter IV, "The Functions and Composition
     of Living Things" (3,248 words). Model: `qwen3:4b` through Ollama's native
     `/api/chat`, `think: false`. Hardware: MacBook Air M5, 24 GB unified memory, one
-    Ollama process, no other model loaded concurrently. Method and full rating notes
-    in `eval/`. Measured `<DATE>`.
+    Ollama process. The benchmark recorded generation time, counts, and exact quote
+    matches. Results and raw cards are in `eval/`. Measured 2026-09-30.
 
 [![CI](https://github.com/Arthur031221/cardsmith/actions/workflows/ci.yml/badge.svg)](https://github.com/Arthur031221/cardsmith/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![version](https://img.shields.io/badge/version-0.1.0-informational.svg)](CHANGELOG.md)
 
-![cardsmith demo](demo/demo.gif)
+![cardsmith deck view](demo/screenshot.png)
 
 ## Why
 
-Quizlet wants $7.99 a month for Plus and puts your notes on their servers.[^quizlet]
+Quizlet offers paid tiers and stores synced notes on its servers.
 Making flashcards by hand from a chapter of reading is slow enough that most people
 skip it and re-read instead, which is a worse way to study. The AI tools that exist
 either need an account and a subscription, or they generate cards with no way to
 check them against the source text before you start memorizing something wrong.
 cardsmith runs entirely on your machine: the LLM, the scheduler, and the database.
 
-[^quizlet]: Quizlet's own pricing page (quizlet.com/plus) returned a bot-protection
-    challenge to automated fetches on 2026-09-30. The Quizlet iOS app listing on the
-    Apple App Store, fetched the same day, shows Quizlet Plus at $9.99 per month or
-    $44.99 per year ($3.75 a month billed annually). Mobile app store prices are
-    often marked up over the web price because of platform fees, so treat $9.99 as an
-    upper bound and $7.99 a month (the commonly cited web price) as the likely lower
-    one.
-
 ## Install
 
 ```
-uvx cardsmith
+uvx --from git+https://github.com/Arthur031221/cardsmith cardsmith
 ```
 
 This starts the local web UI and opens it in your browser. It needs
@@ -56,7 +48,7 @@ Studying existing decks and exporting to Anki work even without Ollama running.
 ## Quick start
 
 1. `ollama pull qwen3:4b` (once)
-2. `uvx cardsmith`
+2. `uvx --from git+https://github.com/Arthur031221/cardsmith cardsmith`
 3. In the browser tab that opens, go to **Generate**, pick a PDF, `.pptx`, or `.txt`
    file, and click **Generate cards**.
 4. Edit any card in the preview, or delete the ones you do not want.
@@ -95,7 +87,7 @@ Studying existing decks and exporting to Anki work even without Ollama running.
 | Source quote per card | yes, with a verbatim check | no | no | no | no |
 | Spaced repetition | SM-2, built in | its own scheduler | uses Anki's | none found | Quizlet's own |
 | Account required | no | yes (hosted) | no (runs inside Anki) | yes (hosted) | yes |
-| Price | free, local compute only | free, self-host or hosted | free | free | $7.99 to $9.99 a month |
+| Price | free, local compute only | free, self-host or hosted | free | free | paid tiers |
 | GitHub stars (2026-09-30) | new | 474 | 882 | 43 | n/a |
 
 quenti is a well-built cloud app, not something you run offline. AnkiAIUtils is the
@@ -150,6 +142,8 @@ The web UI is a thin client over a JSON API on the same port:
   design.
 - Card generation needs Ollama reachable with the model pulled. Studying and
   exporting decks that already exist do not.
+- Factual accuracy of the benchmark cards has not yet been hand-rated. An exact
+  source quote checks provenance, not whether the question and answer are correct.
 
 ## Contributing
 
