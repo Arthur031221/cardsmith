@@ -1,0 +1,20 @@
+# Changelog
+
+## 0.1.0
+
+Initial release.
+
+- Ingest PDF (pymupdf), PowerPoint (python-pptx), and plain text or Markdown files.
+- Generate basic and cloze flashcards with a local Ollama model (qwen3:4b by
+  default), through the native `/api/chat` endpoint with `think` disabled
+  and a strict JSON schema for the response.
+- Every generated card carries a source quote and its location (page or
+  slide), and cardsmith flags cards whose quote cannot be matched verbatim
+  in the source chunk.
+- Local web UI (FastAPI, single page) with an editable preview before cards
+  are saved.
+- SM-2 spaced repetition scheduler backed by SQLite.
+- Export any deck to an Anki `.apkg` package through genanki, with stable
+  deck and note model ids so re-exporting the same deck updates it in Anki
+  instead of duplicating it.
+- `uvx cardsmith` starts the server and opens a browser tab.

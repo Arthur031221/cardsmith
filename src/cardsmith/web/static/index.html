@@ -1,0 +1,408 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>cardsmith</title>
+<style>
+  :root {
+    --bg: #f6f5f2;
+    --panel: #ffffff;
+    --ink: #1c1c1c;
+    --muted: #6b6b6b;
+    --line: #e2e0da;
+    --accent: #2a5db0;
+    --accent-ink: #ffffff;
+    --warn: #b0602a;
+    --bad: #b02a2a;
+    --good: #2a8a4a;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+    background: var(--bg);
+    color: var(--ink);
+  }
+  header {
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+    padding: 18px 24px;
+    border-bottom: 1px solid var(--line);
+    background: var(--panel);
+  }
+  header h1 { font-size: 18px; margin: 0; }
+  header .tagline { color: var(--muted); font-size: 13px; }
+  nav { display: flex; gap: 4px; padding: 0 24px; background: var(--panel); border-bottom: 1px solid var(--line); }
+  nav button {
+    border: none; background: none; padding: 10px 14px; font-size: 14px; cursor: pointer;
+    color: var(--muted); border-bottom: 2px solid transparent;
+  }
+  nav button.active { color: var(--ink); border-bottom-color: var(--accent); font-weight: 600; }
+  main { max-width: 880px; margin: 0 auto; padding: 24px; }
+  .view { display: none; }
+  .view.active { display: block; }
+  .panel {
+    background: var(--panel); border: 1px solid var(--line); border-radius: 8px;
+    padding: 20px; margin-bottom: 16px;
+  }
+  label { display: block; font-size: 13px; color: var(--muted); margin-bottom: 4px; }
+  input[type="text"], input[type="file"], input[type="number"] {
+    width: 100%; padding: 8px 10px; border: 1px solid var(--line); border-radius: 6px;
+    font-size: 14px; background: #fff; color: var(--ink);
+  }
+  .row { display: flex; gap: 12px; margin-bottom: 12px; }
+  .row > div { flex: 1; }
+  button.primary {
+    background: var(--accent); color: var(--accent-ink); border: none; border-radius: 6px;
+    padding: 9px 16px; font-size: 14px; cursor: pointer;
+  }
+  button.primary:disabled { opacity: 0.5; cursor: default; }
+  button.ghost {
+    background: none; border: 1px solid var(--line); border-radius: 6px; padding: 8px 14px;
+    font-size: 13px; cursor: pointer; color: var(--ink);
+  }
+  button.danger { color: var(--bad); border-color: var(--bad); }
+  .cards { display: flex; flex-direction: column; gap: 10px; margin-top: 16px; }
+  .card-edit {
+    border: 1px solid var(--line); border-radius: 8px; padding: 12px 14px; background: #fffdf9;
+  }
+  .card-edit .badge {
+    display: inline-block; font-size: 11px; padding: 2px 8px; border-radius: 10px;
+    background: #eee; color: var(--muted); margin-bottom: 8px;
+  }
+  .card-edit .badge.cloze { background: #e6edf9; color: var(--accent); }
+  .card-edit .badge.warn { background: #f7e6d8; color: var(--warn); }
+  .card-edit textarea {
+    width: 100%; border: 1px solid var(--line); border-radius: 6px; padding: 6px 8px;
+    font-size: 14px; font-family: inherit; resize: vertical; min-height: 36px; margin-bottom: 6px;
+  }
+  .quote { font-size: 12px; color: var(--muted); font-style: italic; margin-top: 4px; }
+  .card-edit .actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 6px; }
+  .deck-row {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 12px 0; border-bottom: 1px solid var(--line);
+  }
+  .deck-row:last-child { border-bottom: none; }
+  .deck-row .meta { color: var(--muted); font-size: 13px; }
+  .deck-actions { display: flex; gap: 8px; }
+  .empty { color: var(--muted); font-size: 14px; padding: 24px 0; text-align: center; }
+  .status { font-size: 13px; margin-top: 8px; }
+  .status.error { color: var(--bad); }
+  .status.ok { color: var(--good); }
+  .study-card {
+    text-align: center; padding: 40px 20px; font-size: 20px; line-height: 1.5;
+  }
+  .study-card .source { margin-top: 24px; font-size: 12px; color: var(--muted); font-style: italic; }
+  .grade-row { display: flex; gap: 8px; justify-content: center; margin-top: 24px; }
+  .grade-row button { flex: 1; max-width: 120px; padding: 10px; border-radius: 6px; border: 1px solid var(--line); cursor: pointer; font-size: 13px; }
+  .grade-again { background: #fbeaea; }
+  .grade-hard { background: #fdf3e5; }
+  .grade-good { background: #eaf6ee; }
+  .grade-easy { background: #e8f0fb; }
+  .stats { color: var(--muted); font-size: 13px; margin-bottom: 12px; }
+  .spinner { display: inline-block; }
+  footer { text-align: center; color: var(--muted); font-size: 12px; padding: 24px; }
+  code { background: #eee; padding: 1px 5px; border-radius: 4px; font-size: 12px; }
+</style>
+</head>
+<body>
+<header>
+  <h1>cardsmith</h1>
+  <span class="tagline">offline flashcards from your own documents</span>
+</header>
+<nav>
+  <button data-view="decks" class="active">Decks</button>
+  <button data-view="generate">Generate</button>
+  <button data-view="study">Study</button>
+</nav>
+<main>
+
+  <section id="view-decks" class="view active">
+    <div class="panel">
+      <div id="deck-list"><div class="empty">Loading decks...</div></div>
+    </div>
+  </section>
+
+  <section id="view-generate" class="view">
+    <div class="panel">
+      <div class="row">
+        <div>
+          <label for="file-input">PDF, slide deck (.pptx), or text file</label>
+          <input type="file" id="file-input" accept=".pdf,.pptx,.txt,.md">
+        </div>
+        <div>
+          <label for="title-input">Deck title (optional)</label>
+          <input type="text" id="title-input" placeholder="taken from the filename">
+        </div>
+      </div>
+      <button class="primary" id="generate-btn">Generate cards</button>
+      <div id="generate-status" class="status"></div>
+    </div>
+    <div id="preview-panel" class="panel" style="display:none">
+      <div class="row" style="align-items:center">
+        <div><strong id="preview-title"></strong> <span id="preview-meta" class="meta"></span></div>
+        <div style="text-align:right">
+          <button class="ghost" id="add-card-btn">Add card</button>
+          <button class="primary" id="save-deck-btn">Save deck</button>
+        </div>
+      </div>
+      <div id="cards-container" class="cards"></div>
+    </div>
+  </section>
+
+  <section id="view-study" class="view">
+    <div class="panel">
+      <div class="row">
+        <div>
+          <label for="study-deck-select">Deck</label>
+          <select id="study-deck-select" style="width:100%; padding:8px; border:1px solid var(--line); border-radius:6px;"></select>
+        </div>
+      </div>
+      <div id="study-stats" class="stats"></div>
+      <div id="study-area"><div class="empty">Pick a deck to study.</div></div>
+    </div>
+  </section>
+
+</main>
+<footer>cardsmith &middot; no account, no cloud &middot; cards stored in a local SQLite database</footer>
+
+<script>
+const $ = (sel, el) => (el || document).querySelector(sel);
+const $$ = (sel, el) => Array.from((el || document).querySelectorAll(sel));
+
+function setView(name) {
+  $$('.view').forEach(v => v.classList.remove('active'));
+  $(`#view-${name}`).classList.add('active');
+  $$('nav button').forEach(b => b.classList.toggle('active', b.dataset.view === name));
+  if (name === 'decks') loadDecks();
+  if (name === 'study') loadStudyDecks();
+}
+$$('nav button').forEach(b => b.addEventListener('click', () => setView(b.dataset.view)));
+
+async function api(path, opts) {
+  const res = await fetch(path, opts);
+  let body = null;
+  try { body = await res.json(); } catch (e) { /* no body */ }
+  if (!res.ok) {
+    const msg = (body && body.detail) ? body.detail : `HTTP ${res.status}`;
+    throw new Error(msg);
+  }
+  return body;
+}
+
+// ---- Decks ----
+
+async function loadDecks() {
+  const el = $('#deck-list');
+  el.innerHTML = '<div class="empty">Loading decks...</div>';
+  try {
+    const data = await api('/api/decks');
+    if (!data.decks.length) {
+      el.innerHTML = '<div class="empty">No decks yet. Go to Generate to build one from a document.</div>';
+      return;
+    }
+    el.innerHTML = '';
+    for (const d of data.decks) {
+      const row = document.createElement('div');
+      row.className = 'deck-row';
+      row.innerHTML = `
+        <div>
+          <div><strong>${escapeHtml(d.title)}</strong></div>
+          <div class="meta">${d.card_count} cards &middot; ${d.due_count} due &middot; from ${escapeHtml(d.source_filename || 'manual entry')}</div>
+        </div>
+        <div class="deck-actions">
+          <button class="ghost" data-act="study">Study</button>
+          <button class="ghost" data-act="export">Export .apkg</button>
+          <button class="ghost danger" data-act="delete">Delete</button>
+        </div>`;
+      row.querySelector('[data-act=study]').onclick = () => { setView('study'); selectStudyDeck(d.id); };
+      row.querySelector('[data-act=export]').onclick = () => { window.location = `/api/decks/${d.id}/export`; };
+      row.querySelector('[data-act=delete]').onclick = async () => {
+        if (!confirm(`Delete deck "${d.title}"? This cannot be undone.`)) return;
+        await api(`/api/decks/${d.id}`, { method: 'DELETE' });
+        loadDecks();
+      };
+      el.appendChild(row);
+    }
+  } catch (e) {
+    el.innerHTML = `<div class="status error">${escapeHtml(e.message)}</div>`;
+  }
+}
+
+// ---- Generate ----
+
+let draftCards = [];
+let draftMeta = {};
+
+$('#generate-btn').addEventListener('click', async () => {
+  const fileInput = $('#file-input');
+  const status = $('#generate-status');
+  if (!fileInput.files.length) {
+    status.textContent = 'Choose a file first.';
+    status.className = 'status error';
+    return;
+  }
+  const fd = new FormData();
+  fd.append('file', fileInput.files[0]);
+  const title = $('#title-input').value.trim();
+  if (title) fd.append('title', title);
+
+  status.textContent = 'Generating cards with the local model, this can take a minute...';
+  status.className = 'status';
+  $('#generate-btn').disabled = true;
+  try {
+    const data = await api('/api/generate', { method: 'POST', body: fd });
+    draftCards = data.cards;
+    draftMeta = { title: data.deck_title, source_filename: data.source_filename };
+    renderPreview();
+    status.textContent = `Generated ${data.cards.length} cards from ${data.chunk_count} chunks.` +
+      (data.errors.length ? ` (${data.errors.length} chunk(s) failed, see server log)` : '');
+    status.className = 'status ok';
+  } catch (e) {
+    status.textContent = e.message;
+    status.className = 'status error';
+  } finally {
+    $('#generate-btn').disabled = false;
+  }
+});
+
+function renderPreview() {
+  $('#preview-panel').style.display = draftCards.length ? 'block' : 'none';
+  $('#preview-title').textContent = draftMeta.title || '';
+  $('#preview-meta').textContent = `${draftCards.length} cards`;
+  const container = $('#cards-container');
+  container.innerHTML = '';
+  draftCards.forEach((card, idx) => container.appendChild(cardEditor(card, idx)));
+}
+
+function cardEditor(card, idx) {
+  const div = document.createElement('div');
+  div.className = 'card-edit';
+  const isCloze = card.type === 'cloze';
+  const badgeClass = isCloze ? 'cloze' : '';
+  const warnBadge = card.grounded === false ? '<span class="badge warn">quote not found in source</span>' : '';
+  div.innerHTML = `
+    <span class="badge ${badgeClass}">${isCloze ? 'cloze' : 'basic'}</span> ${warnBadge}
+    ${isCloze
+      ? `<textarea data-field="cloze_text">${escapeHtml(card.cloze_text)}</textarea>`
+      : `<textarea data-field="front">${escapeHtml(card.front)}</textarea>
+         <textarea data-field="back">${escapeHtml(card.back)}</textarea>`}
+    <div class="quote">source (${escapeHtml(card.source_location || '')}): "${escapeHtml(card.source_quote || '')}"</div>
+    <div class="actions"><button class="ghost danger" data-act="remove">Remove</button></div>`;
+  $$('textarea', div).forEach(t => t.addEventListener('input', () => {
+    draftCards[idx][t.dataset.field] = t.value;
+  }));
+  div.querySelector('[data-act=remove]').onclick = () => {
+    draftCards.splice(idx, 1);
+    renderPreview();
+  };
+  return div;
+}
+
+$('#add-card-btn').addEventListener('click', () => {
+  draftCards.push({ type: 'basic', front: '', back: '', cloze_text: '', source_quote: '', source_location: 'manual', grounded: true });
+  renderPreview();
+});
+
+$('#save-deck-btn').addEventListener('click', async () => {
+  const status = $('#generate-status');
+  try {
+    await api('/api/decks', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ title: draftMeta.title, source_filename: draftMeta.source_filename, cards: draftCards }),
+    });
+    status.textContent = 'Deck saved.';
+    status.className = 'status ok';
+    draftCards = [];
+    draftMeta = {};
+    $('#preview-panel').style.display = 'none';
+    $('#file-input').value = '';
+    $('#title-input').value = '';
+    setView('decks');
+  } catch (e) {
+    status.textContent = e.message;
+    status.className = 'status error';
+  }
+});
+
+// ---- Study ----
+
+async function loadStudyDecks() {
+  const sel = $('#study-deck-select');
+  const data = await api('/api/decks');
+  sel.innerHTML = data.decks.map(d => `<option value="${d.id}">${escapeHtml(d.title)} (${d.due_count} due)</option>`).join('');
+  if (data.decks.length) loadNextCard(sel.value);
+  else $('#study-area').innerHTML = '<div class="empty">No decks yet.</div>';
+}
+$('#study-deck-select').addEventListener('change', e => loadNextCard(e.target.value));
+function selectStudyDeck(id) {
+  const sel = $('#study-deck-select');
+  const trySelect = () => {
+    if ($$('option', sel).some(o => o.value == id)) { sel.value = id; loadNextCard(id); }
+    else setTimeout(trySelect, 50);
+  };
+  trySelect();
+}
+
+let currentCard = null;
+let currentDeckId = null;
+
+async function loadNextCard(deckId) {
+  currentDeckId = deckId;
+  const data = await api(`/api/decks/${deckId}/study/next`);
+  currentCard = data.card;
+  $('#study-stats').textContent = `${data.stats.due} due, ${data.stats.new} new, ${data.stats.total} total`;
+  const area = $('#study-area');
+  if (!currentCard) {
+    area.innerHTML = '<div class="empty">Nothing due right now. Come back later.</div>';
+    return;
+  }
+  const front = currentCard.card_type === 'cloze'
+    ? currentCard.cloze_text.replace(/\{\{c\d+::(.*?)\}\}/g, '[...]')
+    : currentCard.front;
+  area.innerHTML = `
+    <div class="study-card">
+      <div id="study-front">${escapeHtml(front)}</div>
+      <div id="study-back" style="display:none; margin-top:20px; color: var(--accent);"></div>
+      <div class="source" id="study-source"></div>
+      <div style="margin-top:24px">
+        <button class="ghost" id="show-answer-btn">Show answer</button>
+      </div>
+      <div class="grade-row" id="grade-row" style="display:none">
+        <button class="grade-again" data-q="1">Again</button>
+        <button class="grade-hard" data-q="3">Hard</button>
+        <button class="grade-good" data-q="4">Good</button>
+        <button class="grade-easy" data-q="5">Easy</button>
+      </div>
+    </div>`;
+  $('#show-answer-btn').onclick = () => {
+    const back = currentCard.card_type === 'cloze'
+      ? currentCard.cloze_text.replace(/\{\{c\d+::(.*?)\}\}/g, '$1')
+      : currentCard.back;
+    $('#study-back').textContent = back;
+    $('#study-back').style.display = 'block';
+    $('#study-source').textContent = `${currentCard.source_location}: "${currentCard.source_quote}"`;
+    $('#show-answer-btn').style.display = 'none';
+    $('#grade-row').style.display = 'flex';
+  };
+  $$('#grade-row button').forEach(b => b.onclick = async () => {
+    await api(`/api/decks/${deckId}/study/${currentCard.id}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ quality: parseInt(b.dataset.q, 10) }),
+    });
+    loadNextCard(deckId);
+  });
+}
+
+function escapeHtml(s) {
+  return String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+loadDecks();
+</script>
+</body>
+</html>
