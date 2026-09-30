@@ -6,7 +6,9 @@ cloud, nothing leaves your machine.
 
 On a 3,248-word public-domain biology chapter, cardsmith generated 152 cards in
 775.5 seconds. Its mechanical source-quote check matched 142 of 152 cards to an
-exact substring of the input. Factual accuracy has not yet been hand-rated.[^bench]
+exact substring of the input. A 40-card hand rating against the source text
+found 37 factually accurate, 1 inaccurate, and 2 unusable, for 92.5 percent
+accuracy.[^bench]
 
 [^bench]: Source: Project Gutenberg ebook #39969, *A Civic Biology, Presented in
     Problems* by George W. Hunter (1914), Chapter IV, "The Functions and Composition
@@ -61,9 +63,9 @@ Studying existing decks and exporting to Anki work even without Ollama running.
   slide (including speaker notes), plain text and Markdown files are split by
   paragraph. Small adjacent pages or paragraphs are merged and long ones are split, so
   each chunk sent to the model is 120 to 900 words.
-- **Generate**: each chunk goes to Ollama's native `/api/chat` (not the
-  OpenAI-compatible endpoint, which was found to ignore `think: false` for qwen3
-  models and burn the output budget on hidden reasoning) with `think: false` and a
+- **Generate**: each chunk goes to Ollama's native `/api/chat` (not its
+  chat-completions compatibility endpoint, which was found to ignore `think: false`
+  for qwen3 models and burn the output budget on hidden reasoning) with `think: false` and a
   JSON schema passed as `format`, so the reply is always parseable. The model is told
   to use only facts in the chunk and to attach a verbatim `source_quote` to every
   card. cardsmith checks whether that quote is actually a substring of the chunk and
@@ -142,8 +144,11 @@ The web UI is a thin client over a JSON API on the same port:
   design.
 - Card generation needs Ollama reachable with the model pulled. Studying and
   exporting decks that already exist do not.
-- Factual accuracy of the benchmark cards has not yet been hand-rated. An exact
-  source quote checks provenance, not whether the question and answer are correct.
+- Factual accuracy was hand-rated at 92.5 percent on the 40-card sample (see
+  [eval/results.md](eval/results.md)). An exact source quote checks
+  provenance, not whether the question and answer are correct: the errors
+  found were a merged fact from two unrelated source lines and a cloze card
+  whose answer word was still visible outside the blank.
 
 ## Related projects
 

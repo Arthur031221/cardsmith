@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+- Hand-rated the 40-card generation benchmark for factual accuracy: 37 of 40
+  accurate (92.5 percent). Results and per-card ratings are in
+  `eval/results.md` and `eval/rated_cards.md`.
+
 ## 0.1.0
 
 Initial release.
