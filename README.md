@@ -21,7 +21,7 @@ accuracy.[^bench]
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![version](https://img.shields.io/badge/version-0.1.0-informational.svg)](CHANGELOG.md)
 
-![cardsmith deck view](demo/screenshot.png)
+![cardsmith: generate a deck from a text file, then study it](assets/demo.gif)
 
 ## Why
 
