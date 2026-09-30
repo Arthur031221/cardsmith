@@ -145,6 +145,12 @@ The web UI is a thin client over a JSON API on the same port:
 - Factual accuracy of the benchmark cards has not yet been hand-rated. An exact
   source quote checks provenance, not whether the question and answer are correct.
 
+## Related projects
+
+- [papercompass](https://github.com/Arthur031221/papercompass): Recommends papers from your own library the way cardsmith turns your own PDFs into cards, both local-first.
+- [labexplain](https://github.com/Arthur031221/labexplain): Same shape: a PDF in, a local model does the extraction, nothing leaves your machine.
+- [snipmd](https://github.com/Arthur031221/snipmd): If a source PDF has an equation cardsmith's cards would mangle, snip it separately and paste the LaTeX in.
+
 ## Contributing
 
 See [CONTRIBUTING.md](CONTRIBUTING.md).
