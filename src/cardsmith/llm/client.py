@@ -54,7 +54,10 @@ class OllamaClient:
         if r.status_code != 200:
             return False, f"ollama returned HTTP {r.status_code}"
         names = [m.get("name", "") for m in r.json().get("models", [])]
-        if not any(n == self.model or n.startswith(self.model.split(":")[0]) for n in names):
+        if not any(
+            n == self.model or (":" not in self.model and n.startswith(f"{self.model}:"))
+            for n in names
+        ):
             return (
                 False,
                 f"model {self.model} not found in `ollama list` ({', '.join(names) or 'no models pulled'})",

@@ -87,6 +87,27 @@ def test_ping_reports_missing_model():
     assert "qwen3:4b" in message
 
 
+def test_ping_does_not_accept_a_different_tag_from_the_same_model_family():
+    def handler(request):
+        return httpx.Response(200, json={"models": [{"name": "qwen3:32b"}]})
+
+    client = OllamaClient(model="qwen3:4b", transport=httpx.MockTransport(handler))
+    ok, message = client.ping()
+
+    assert ok is False
+    assert "qwen3:4b" in message
+
+
+def test_ping_accepts_a_tagged_model_when_configured_without_a_tag():
+    def handler(request):
+        return httpx.Response(200, json={"models": [{"name": "qwen3:latest"}]})
+
+    client = OllamaClient(model="qwen3", transport=httpx.MockTransport(handler))
+    ok, _message = client.ping()
+
+    assert ok is True
+
+
 def test_ping_reports_unreachable_server():
     def handler(request):
         raise httpx.ConnectError("connection refused")
