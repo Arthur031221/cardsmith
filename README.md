@@ -4,6 +4,8 @@ Offline flashcards. Drop a PDF, a slide deck, or a text file, get a spaced-repet
 deck built by a local LLM, study it in the browser, export to Anki. No account, no
 cloud, nothing leaves your machine.
 
+![cardsmith: generate a deck from a text file, then study it](assets/demo.gif)
+
 On a 3,248-word public-domain biology chapter, cardsmith generated 152 cards in
 775.5 seconds. Its mechanical source-quote check matched 142 of 152 cards to an
 exact substring of the input. A 40-card hand rating against the source text
@@ -20,8 +22,6 @@ accuracy.[^bench]
 [![CI](https://github.com/Arthur031221/cardsmith/actions/workflows/ci.yml/badge.svg)](https://github.com/Arthur031221/cardsmith/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![version](https://img.shields.io/badge/version-0.1.0-informational.svg)](CHANGELOG.md)
-
-![cardsmith: generate a deck from a text file, then study it](assets/demo.gif)
 
 ## Why
 
