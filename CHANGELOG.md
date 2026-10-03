@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Limit upload reads to one byte over the configured maximum before rejecting oversized files.
 - Fix the Ollama connection check accepting a different tag from the configured model.
 - Hand-rated the 40-card generation benchmark for factual accuracy: 37 of 40
   accurate (92.5 percent). Results and per-card ratings are in

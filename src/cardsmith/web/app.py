@@ -62,11 +62,9 @@ def create_app(db_path: str, client: ChatClient, cards_per_chunk: int = 4) -> Fa
             raise HTTPException(
                 400, f"unsupported file type '{suffix}'. Use .pdf, .pptx, .txt, or .md"
             )
-        data = await file.read()
+        data = await file.read(MAX_UPLOAD_BYTES + 1)
         if len(data) > MAX_UPLOAD_BYTES:
-            raise HTTPException(
-                400, f"file too large ({len(data)} bytes, limit {MAX_UPLOAD_BYTES})"
-            )
+            raise HTTPException(400, f"file exceeds the {MAX_UPLOAD_BYTES} byte limit")
         if not data:
             raise HTTPException(400, "uploaded file is empty")
 

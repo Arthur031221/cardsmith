@@ -1,7 +1,9 @@
 import zipfile
 
+import starlette.datastructures
 from fastapi.testclient import TestClient
 
+from cardsmith.web import app as web_app
 from cardsmith.web.app import create_app
 
 from .conftest import FakeChatClient, card_response
@@ -40,6 +42,25 @@ def test_generate_rejects_empty_file(tmp_db):
     client, _ = make_client(tmp_db)
     r = client.post("/api/generate", files={"file": ("notes.txt", b"", "text/plain")})
     assert r.status_code == 400
+
+
+def test_generate_reads_only_one_byte_over_upload_limit(tmp_db, monkeypatch):
+    monkeypatch.setattr(web_app, "MAX_UPLOAD_BYTES", 16)
+    original_read = starlette.datastructures.UploadFile.read
+    requested_sizes = []
+
+    async def tracking_read(file, size=-1):
+        requested_sizes.append(size)
+        return await original_read(file, size)
+
+    monkeypatch.setattr(starlette.datastructures.UploadFile, "read", tracking_read)
+    client, _ = make_client(tmp_db)
+
+    r = client.post("/api/generate", files={"file": ("notes.txt", b"x" * 17, "text/plain")})
+
+    assert r.status_code == 400
+    assert "16 byte limit" in r.json()["detail"]
+    assert requested_sizes == [17]
 
 
 def test_full_workflow_generate_save_study_export(tmp_db, sample_txt):
